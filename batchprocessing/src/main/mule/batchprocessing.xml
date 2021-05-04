@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1292e953-e675-44cc-ab77-3606d1f752c7" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="71d23fe2-de73-494b-a8ea-655e784458ac" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Mulesoft@123" database="mytestdb" />
+	</db:config>
+	<flow name="batchprocessingFlow" doc:id="1924b3b9-ff91-431b-bdfb-fd633013cac6" >
+		<http:listener doc:name="BatchProcess" doc:id="f05afbe1-1a41-4406-9b2d-030ff48a51c5" config-ref="HTTP_Listener_config" path="/batch"/>
+		<logger level="INFO" doc:name="Logger" doc:id="502a8d41-8c90-4156-95de-8edc4759c90f" message="#[payload]"/>
+		<db:select doc:name="Select" doc:id="83d98a75-7481-4a16-a1a5-1f15f626bb30" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM mytestdb.employee;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="3fd1de4c-0158-422d-8614-06ff256d0eb0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"statuscode":200,
+	"Result":"Sucessfully Done"
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a9f18a63-bbd2-4263-8b60-075e86793392" message="#[payload]"/>
+	</flow>
+</mule>
